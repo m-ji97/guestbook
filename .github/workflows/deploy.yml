@@ -1,0 +1,31 @@
+name: Deploy GuestbookApp  #워크플로워 이름
+
+on:						   #이벤트 정의
+  push:
+    branches:
+      - master  		   # master 깃허브에 push가 되면
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Set up JDK 17
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          
+      - name: Build with Maven
+        run: mvn clean package
+        
+      - name: Build Docker image
+        run: docker build . -t tv5035/guestbook:latest
+        
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+        
+      - name: Push Docker image to Docker Hub
+        run: docker push tv5035/guestbook:latest
